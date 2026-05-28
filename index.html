@@ -235,9 +235,9 @@ function fmtV(n){
   if(n===null||isNaN(n)) return '—';
   var abs=Math.abs(n),s=n<0?'-':'';
   if(abs>=1e9) return s+(abs/1e9).toFixed(2)+'B';
-  if(abs>=1e6) return s+'$'+(abs/1e6).toFixed(1)+'M';
-  if(abs>=1e3) return s+'$'+(abs/1e3).toFixed(0)+'K';
-  return s+'$'+abs.toFixed(0);
+  if(abs>=1e6) return s+(abs/1e6).toFixed(1)+'M';
+  if(abs>=1e3) return s+(abs/1e3).toFixed(0)+'K';
+  return s+abs.toFixed(0);
 }
 function fmtCnt(n){
   if(n===null||isNaN(n)) return '—';

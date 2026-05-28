@@ -220,11 +220,11 @@ html,body{
       </div>
       <!-- Toggle controls -->
       <div class="toggle-group">
-        <button class="tog on" id="tog-legend" onclick="toggleLegend()" title="Show/hide legend">
+        <button class="tog" id="tog-legend" onclick="toggleLegend()" title="Show/hide legend">
           <svg viewBox="0 0 12 12" fill="none"><rect x="1" y="2.5" width="4" height="2" rx=".8" fill="currentColor"/><rect x="1" y="7.5" width="4" height="2" rx=".8" fill="currentColor"/><line x1="6.5" y1="3.5" x2="11" y2="3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="6.5" y1="8.5" x2="11" y2="8.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
           Legend
         </button>
-        <button class="tog on" id="tog-axis" onclick="toggleAxis()" title="Show/hide axis labels">
+        <button class="tog" id="tog-axis" onclick="toggleAxis()" title="Show/hide axis labels">
           <svg viewBox="0 0 12 12" fill="none"><line x1="2" y1="10" x2="2" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="2" y1="10" x2="10" y2="10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="4" y1="7" x2="4" y2="10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/><line x1="7" y1="5" x2="7" y2="10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
           Axis
         </button>
@@ -232,7 +232,7 @@ html,body{
     </div>
 
     <!-- Legend -->
-    <div class="legend" id="legend-row">
+    <div class="legend hidden" id="legend-row">
       <div class="li">
         <div class="ld" style="background:#2563eb"></div>System Count
         <span class="axis-tag bar-tag">BAR ← left</span>
@@ -253,7 +253,7 @@ html,body{
   </div>
 
   <!-- CHART -->
-  <div class="chart-container" style="position:relative">
+  <div class="chart-container" style="position:relative" id="chart-container" onmouseleave="hidePanel()">
     <canvas id="chart-canvas"></canvas>
 
     <!-- Hover Panel -->
@@ -292,7 +292,7 @@ html,body{
 
 var $=function(id){return document.getElementById(id);};
 var chartObj=null;
-var showLegend=true, showAxis=true;
+var showLegend=false, showAxis=false;
 
 /* ── state for hover panel ── */
 var hoverData={};   /* keyed by label: {sysCnt,manCnt,sysVol,manVol,top5:[]} */
@@ -388,9 +388,9 @@ function showPanel(label){
   $('hover-panel').classList.add('visible');
 }
 
-function hidePanel(){
+window.hidePanel=window.hidePanel=function(){
   $('hover-panel').classList.remove('visible');
-}
+};
 
 /* ════════════════════════════════
    CONFIRMED WORKING DATA READERS
@@ -492,21 +492,29 @@ function buildChart(labels,sysCnt,manCnt,sysVol,manVol){
     responsive:true,maintainAspectRatio:false,
     interaction:{mode:'index',intersect:false},
     animation:{duration:800,easing:'easeOutQuart'},
-    onHover:function(event,elements,chart){
-      if(elements&&elements.length>0){
-        var idx=elements[0].index;
-        var lbl=labels[idx];
-        if(lbl) showPanel(lbl);
-      } else {
-        clearTimeout(panelTimer);
-        panelTimer=setTimeout(hidePanel,200);
-      }
-    },
+
     plugins:{
       legend:{display:false},
-      tooltip:{
-        /* Use built-in tooltip only as a fallback — our panel handles display */
-        enabled:false
+      tooltip:{enabled:false},
+      /* ── custom hover panel plugin ── */
+      hoverPanel:{
+        afterEvent:function(chart,args){
+          var e=args.event;
+          /* mouse left canvas → hide immediately */
+          if(e.type==='mouseout'||e.type==='mouseleave'){
+            hidePanel();
+            return;
+          }
+          if(e.type!=='mousemove') return;
+          var pts=chart.getElementsAtEventForMode(e.native,'index',{intersect:false},false);
+          if(pts&&pts.length>0){
+            var idx=pts[0].index;
+            var lbl=chart.data.labels[idx];
+            if(lbl) showPanel(lbl);
+          } else {
+            hidePanel();
+          }
+        }
       }
     },
     scales:{
@@ -552,7 +560,7 @@ function buildChart(labels,sysCnt,manCnt,sysVol,manVol){
         border:{display:false}
       }
     },
-    layout:{padding:{top:6,bottom:4,left:2,right:2}}
+    layout:{padding:{top:22,bottom:4,left:2,right:2}}
   };
 
   var datasets=[
@@ -581,6 +589,53 @@ function buildChart(labels,sysCnt,manCnt,sysVol,manVol){
   ];
 
   if(!chartObj){
+    /* ── max value label plugin ──
+       Draws the maximum value label on the tallest bar/point
+       for each dataset so users instantly see the peak.      */
+    Chart.register({
+      id:'maxLabels',
+      afterDatasetsDraw:function(chart){
+        var ctx2=chart.ctx;
+        chart.data.datasets.forEach(function(ds,dsIdx){
+          var meta=chart.getDatasetMeta(dsIdx);
+          if(!meta.visible) return;
+          /* find max value index */
+          var vals=ds.data.filter(function(v){return v!==null&&!isNaN(v);});
+          if(!vals.length) return;
+          var maxVal=Math.max.apply(null,vals);
+          if(maxVal<=0) return;
+
+          meta.data.forEach(function(element,i){
+            var val=ds.data[i];
+            if(val!==maxVal) return; /* only draw on the max bar/point */
+
+            ctx2.save();
+            ctx2.font='700 9px Inter,sans-serif';
+            ctx2.fillStyle=ds.borderColor||ds.backgroundColor||'#334155';
+            ctx2.textAlign='center';
+            ctx2.textBaseline='bottom';
+
+            var x=element.x;
+            var y=element.y-3; /* 3px above the bar/point */
+
+            /* white outline for readability */
+            ctx2.strokeStyle='rgba(255,255,255,.9)';
+            ctx2.lineWidth=3;
+            ctx2.lineJoin='round';
+            var txt=fmtN(val);
+            ctx2.strokeText(txt,x,y);
+            ctx2.fillText(txt,x,y);
+            ctx2.restore();
+          });
+        });
+      }
+    });
+
+    /* register hover panel plugin inline */
+    Chart.register({
+      id:'hoverPanel',
+      afterEvent:opts.plugins.hoverPanel.afterEvent
+    });
     chartObj=new Chart(ctx,{type:'bar',data:{labels:labels,datasets:datasets},options:opts});
   } else {
     chartObj.data.labels=labels;

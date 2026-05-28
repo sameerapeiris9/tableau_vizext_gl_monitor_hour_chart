@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>GL Transaction Chart</title>
+<script src="https://cdn.jsdelivr.net/gh/tableau/extensions-api/lib/tableau.extensions.1.latest.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:       #f1f5f9;
+  --card:     #ffffff;
+  --bdr:      #eff2f6;
+  --t1:       #1e293b;
+  --t2:       #334155;
+  --t3:       #64748b;
+  --t4:       #94a3b8;
+  --sys-bar:  #3b82f6;
+  --man-bar:  #f59e0b;
+  --sys-line: #22c55e;
+  --man-line: #f97316;
+  --font:     'Inter',-apple-system,'Segoe UI',sans-serif;
+  --ease:     cubic-bezier(.16,1,.3,1);
+}
+
+html,body{
+  width:100%;height:100%;
+  background:var(--bg);
+  font-family:var(--font);
+  display:flex;align-items:stretch;justify-content:stretch;
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+#app{
+  width:100%;height:100%;
+  display:flex;align-items:stretch;
+}
+
+/* ════════════════════════════════
+   CHART CARD — fills entire zone
+════════════════════════════════ */
+.chart-card{
+  width:100%;
+  background:var(--card);
+  border-radius:0;
+  box-shadow:none;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  transition:box-shadow .2s ease;
+}
+
+/* ── HEADER ── */
+.chart-header{
+  padding:14px 20px 12px;
+  border-bottom:1px solid var(--bdr);
+  flex-shrink:0;
+}
+.hdr-top{
+  display:flex;align-items:center;
+  justify-content:space-between;
+  gap:10px;flex-wrap:wrap;
+}
+.hdr-title{
+  font-size:13px;font-weight:700;
+  color:var(--t1);letter-spacing:-.3px;
+  line-height:1.2;
+}
+.hdr-sub{
+  font-size:10px;color:var(--t4);
+  font-weight:400;margin-top:2px;
+}
+
+/* live badge */
+.live-badge{
+  display:flex;align-items:center;gap:5px;
+  font-size:10px;font-weight:600;color:#22c55e;
+  background:rgba(34,197,94,.09);
+  padding:4px 10px;border-radius:99px;
+  border:1px solid rgba(34,197,94,.2);
+  flex-shrink:0;
+}
+.live-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:#22c55e;
+  animation:livePulse 2s infinite;
+}
+@keyframes livePulse{
+  0%{box-shadow:0 0 0 0 rgba(34,197,94,.5);}
+  70%{box-shadow:0 0 0 7px rgba(34,197,94,0);}
+  100%{box-shadow:0 0 0 0 rgba(34,197,94,0);}
+}
+
+/* legend */
+.legend{
+  display:flex;gap:16px;margin-top:10px;
+  flex-wrap:wrap;align-items:center;
+}
+.li{
+  display:flex;align-items:center;gap:6px;
+  font-size:10.5px;font-weight:500;color:#475569;
+}
+.ld{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+.ll{width:18px;height:3px;border-radius:3px;flex-shrink:0;}
+
+/* ── CHART AREA ── */
+.chart-container{
+  flex:1;
+  padding:12px 16px 10px;
+  position:relative;
+  min-height:0;
+}
+#chart-canvas{
+  width:100%!important;
+  height:100%!important;
+}
+
+/* ── FOOTER ── */
+.chart-footer{
+  padding:10px 20px 12px;
+  border-top:1px solid var(--bdr);
+  display:flex;justify-content:space-between;
+  align-items:center;flex-wrap:wrap;gap:8px;
+  flex-shrink:0;
+}
+.freshness{
+  display:flex;align-items:center;gap:5px;
+  font-size:10px;color:var(--t4);
+}
+.f-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:#22c55e;
+}
+.stats-summary{
+  display:flex;gap:16px;flex-wrap:wrap;
+}
+.stat-mini{
+  font-size:10px;color:var(--t3);
+  white-space:nowrap;
+}
+.stat-mini b{color:var(--t1);font-weight:600;}
+
+/* ── LOADING / EMPTY ── */
+#loading{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.8);backdrop-filter:blur(4px);
+  flex-direction:column;gap:10px;z-index:10;
+  border-radius:0;
+}
+.spinner{
+  width:28px;height:28px;
+  border:3px solid var(--bdr);
+  border-top-color:#3b82f6;
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-size:11px;color:var(--t4);font-weight:500;}
+
+#empty{
+  display:none;
+  position:absolute;inset:0;
+  align-items:center;justify-content:center;
+  flex-direction:column;gap:8px;
+}
+.empty-icon{font-size:28px;}
+.empty-txt{font-size:11px;color:var(--t4);font-weight:500;}
+
+/* Responsive */
+@media(max-width:600px){
+  .chart-header{padding:10px 12px 8px;}
+  .chart-container{padding:8px 8px 6px;}
+  .chart-footer{padding:8px 12px 10px;}
+  .hdr-title{font-size:11px;}
+}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="chart-card">
+
+  <!-- Header -->
+  <div class="chart-header">
+    <div class="hdr-top">
+      <div>
+        <div class="hdr-title">GL Transaction Monitor — Hourly View</div>
+        <div class="hdr-sub" id="hdr-sub">Manual vs System breakdown by hour</div>
+      </div>
+      <div class="live-badge"><div class="live-dot"></div> Live</div>
+    </div>
+    <div class="legend">
+      <div class="li"><div class="ld" style="background:#3b82f6"></div>System Count</div>
+      <div class="li"><div class="ld" style="background:#f59e0b"></div>Manual Count</div>
+      <div class="li"><div class="ll" style="background:#22c55e"></div>System Volume</div>
+      <div class="li"><div class="ll" style="background:#f97316"></div>Manual Volume</div>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="chart-container" style="position:relative">
+    <canvas id="chart-canvas"></canvas>
+    <div id="loading">
+      <div class="spinner"></div>
+      <div class="loading-txt">Loading data…</div>
+    </div>
+    <div id="empty" style="display:none">
+      <div class="empty-icon">📊</div>
+      <div class="empty-txt">Drop Hour, System Count, Manual Count and System Volume on the Marks card</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="chart-footer">
+    <div class="freshness">
+      <div class="f-dot"></div>
+      <span>Live data · Updated hourly</span>
+    </div>
+    <div class="stats-summary">
+      <div class="stat-mini">⚙️ System: <b id="f-sys-cnt">—</b> txns · <b id="f-sys-vol">—</b></div>
+      <div class="stat-mini">📝 Manual: <b id="f-man-cnt">—</b> txns · <b id="f-man-vol">—</b></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+'use strict';
+(function(){
+
+var $=function(id){return document.getElementById(id);};
+var chartObj=null;
+
+/* ── number format ── */
+function fmtV(n){
+  if(n===null||isNaN(n)) return '—';
+  var abs=Math.abs(n),s=n<0?'-':'';
+  if(abs>=1e9) return s+(abs/1e9).toFixed(2)+'B';
+  if(abs>=1e6) return s+'$'+(abs/1e6).toFixed(1)+'M';
+  if(abs>=1e3) return s+'$'+(abs/1e3).toFixed(0)+'K';
+  return s+'$'+abs.toFixed(0);
+}
+function fmtCnt(n){
+  if(n===null||isNaN(n)) return '—';
+  return Math.round(n).toLocaleString('en-US');
+}
+
+/* ── confirmed working data reader ── */
+async function getData(ws){
+  var rows=[],rdr=await ws.getSummaryDataReaderAsync(undefined,{ignoreSelection:true});
+  for(var i=0;i<rdr.pageCount;i++){
+    var pg=await rdr.getPageAsync(i);
+    pg.data.forEach(function(r){
+      var row={};
+      pg.columns.forEach(function(c,idx){row[c.fieldName]=r[idx];});
+      rows.push(row);
+    });
+  }
+  await rdr.releaseAsync();
+  return rows;
+}
+
+async function getEnc(ws){
+  var spec=await ws.getVisualSpecificationAsync(),map={};
+  if(spec.activeMarksSpecificationIndex<0) return map;
+  spec.marksSpecifications[spec.activeMarksSpecificationIndex]
+      .encodings.forEach(function(e){map[e.id]=e.field;});
+  return map;
+}
+
+/* ── find row key ── */
+function findKey(encField,rowKeys){
+  if(!encField) return null;
+  var nm=encField.name.toLowerCase();
+  for(var i=0;i<rowKeys.length;i++) if(rowKeys[i].toLowerCase()===nm) return rowKeys[i];
+  return null;
+}
+
+/* ── auto-detect hour/date key ── */
+function autoHourKey(rowKeys,rows){
+  var candidates=['hour','h','time','date','day','month','period','posting'];
+  for(var ci=0;ci<candidates.length;ci++){
+    for(var ki=0;ki<rowKeys.length;ki++){
+      if(rowKeys[ki].toLowerCase().indexOf(candidates[ci])>=0) return rowKeys[ki];
+    }
+  }
+  /* fallback: find a key where formattedValue looks like HH:MM or just a number */
+  if(rows.length){
+    for(var ki=0;ki<rowKeys.length;ki++){
+      var dv=rows[0][rowKeys[ki]];
+      if(!dv) continue;
+      var fv=(dv.formattedValue||'');
+      if(fv.match(/^\d{1,2}:\d{2}$/)||fv.match(/^hour\s*\d/i)) return rowKeys[ki];
+    }
+  }
+  return null;
+}
+
+/* ── format label from DataValue ── */
+function fmtLabel(dv){
+  if(!dv) return '';
+  var fv=(dv.formattedValue||'').trim();
+  if(fv&&fv!=='%null%'&&fv!=='Null') return fv;
+  var nv=dv.nativeValue;
+  if(typeof nv==='number'&&nv>=0&&nv<=23) return nv+':00';
+  if(typeof nv==='number'&&nv>1e10){
+    var d=new Date(nv);
+    return d.getHours()+':00';
+  }
+  return String(nv||'');
+}
+
+/* ── dvNum ── */
+function dvNum(row,k){
+  if(!k||!row[k]) return null;
+  var dv=row[k];
+  var raw=dv.nativeValue!==undefined&&dv.nativeValue!==null?dv.nativeValue:dv.value;
+  var n=parseFloat(raw);
+  return isNaN(n)?null:n;
+}
+
+/* ── build / update chart ── */
+function buildChart(labels,sysCnt,manCnt,sysVol,manVol){
+  var ctx=$('chart-canvas').getContext('2d');
+
+  /* calculate tick step for count axis */
+  var maxCnt=Math.max.apply(null,sysCnt.concat(manCnt).filter(function(v){return v!==null;}));
+  var cntStep=Math.ceil(maxCnt/5/100)*100||100;
+
+  var opts={
+    responsive:true,
+    maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    animation:{duration:800,easing:'easeOutQuart'},
+    plugins:{
+      legend:{display:false},
+      tooltip:{
+        backgroundColor:'#1e293b',
+        titleColor:'#f1f5f9',bodyColor:'#cbd5e1',
+        titleFont:{size:11,weight:'600',family:'Inter'},
+        bodyFont:{size:10,family:'Inter'},
+        padding:12,cornerRadius:10,caretSize:6,
+        callbacks:{
+          title:function(ctx2){return 'Hour: '+ctx2[0].label;},
+          label:function(ctx2){
+            var l=ctx2.dataset.label,v=ctx2.raw;
+            if(v===null||v===undefined) return null;
+            if(l==='System Count')  return '⚙️ System: '+fmtCnt(v)+' txns';
+            if(l==='Manual Count')  return '📝 Manual: '+fmtCnt(v)+' txn'+(v!==1?'s':'');
+            if(l==='System Volume') return '💰 Sys Vol: '+fmtV(v);
+            if(l==='Manual Volume') return '⚠️ Man Vol: '+fmtV(v);
+            return l+': '+v;
+          },
+          afterBody:function(ctx2){
+            var idx=ctx2[0].dataIndex;
+            var mc=manCnt[idx], mv=manVol[idx];
+            if(mc>0&&mv>0){
+              return '   └ Avg per manual: '+fmtV(Math.round(mv/mc));
+            }
+            return null;
+          }
+        }
+      }
+    },
+    scales:{
+      x:{
+        grid:{display:false},
+        border:{display:false},
+        ticks:{
+          font:{size:9,family:'Inter',weight:'500'},
+          color:'#94a3b8',maxRotation:45,
+          callback:function(v,i){
+            /* show every 3rd label to avoid crowding */
+            return i%3===0?labels[i]:'';
+          }
+        }
+      },
+      'y-count':{
+        position:'left',
+        title:{display:true,text:'Transaction Count',
+          font:{size:9,weight:'600',family:'Inter'},color:'#64748b',padding:{bottom:6}},
+        grid:{display:false,drawBorder:false,drawOnChartArea:false},
+        ticks:{font:{size:9,family:'Inter'},color:'#94a3b8',
+          callback:function(v){return v.toLocaleString();},stepSize:cntStep},
+        border:{display:false},min:0
+      },
+      'y-amount':{
+        position:'right',
+        title:{display:true,text:'Volume',
+          font:{size:9,weight:'600',family:'Inter'},color:'#64748b',padding:{bottom:6}},
+        grid:{display:false,drawBorder:false,drawOnChartArea:false},
+        ticks:{font:{size:9,family:'Inter'},color:'#94a3b8',
+          callback:function(v){return fmtV(v);}},
+        border:{display:false}
+      }
+    },
+    layout:{padding:{top:6,bottom:4,left:2,right:2}}
+  };
+
+  var datasets=[
+    {
+      label:'System Count',data:sysCnt,
+      type:'bar',yAxisID:'y-count',
+      backgroundColor:'rgba(59,130,246,.75)',
+      borderColor:'#2563eb',borderWidth:0,
+      borderRadius:5,barPercentage:.65,categoryPercentage:.75,order:2
+    },
+    {
+      label:'Manual Count',data:manCnt,
+      type:'bar',yAxisID:'y-count',
+      backgroundColor:'rgba(245,158,11,.85)',
+      borderColor:'#d97706',borderWidth:0,
+      borderRadius:5,barPercentage:.65,categoryPercentage:.75,order:1
+    },
+    {
+      label:'System Volume',data:sysVol,
+      type:'line',yAxisID:'y-amount',
+      borderColor:'#22c55e',backgroundColor:'transparent',
+      borderWidth:2.5,
+      pointRadius:2.5,pointHoverRadius:6,
+      pointBackgroundColor:'#22c55e',
+      pointBorderColor:'#fff',pointBorderWidth:2,
+      tension:.3,fill:false,order:0
+    },
+    {
+      label:'Manual Volume',data:manVol,
+      type:'line',yAxisID:'y-amount',
+      borderColor:'#f97316',backgroundColor:'transparent',
+      borderWidth:2.5,
+      pointRadius:3.5,pointHoverRadius:7,
+      pointBackgroundColor:'#f97316',
+      pointBorderColor:'#fff',pointBorderWidth:2,
+      tension:.3,fill:false,order:0
+    }
+  ];
+
+  if(!chartObj){
+    chartObj=new Chart(ctx,{type:'bar',data:{labels:labels,datasets:datasets},options:opts});
+  } else {
+    chartObj.data.labels=labels;
+    datasets.forEach(function(ds,i){chartObj.data.datasets[i].data=ds.data;});
+    chartObj.options.scales['y-count'].ticks.stepSize=cntStep;
+    chartObj.update('active');
+  }
+}
+
+/* ── process rows → chart data ── */
+function process(rows,enc){
+  if(!rows.length){
+    $('loading').style.display='none';
+    $('empty').style.display='flex';
+    return;
+  }
+
+  var rowKeys=Object.keys(rows[0]);
+
+  var hourKey   =findKey(enc.hour,    rowKeys)||autoHourKey(rowKeys,rows);
+  var sysKey    =findKey(enc.sys_count,rowKeys);
+  var manKey    =findKey(enc.man_count,rowKeys);
+  var sysVolKey =findKey(enc.sys_vol,  rowKeys);
+
+  /* auto-detect manual volume from Detail fields */
+  var usedKeys=[hourKey,sysKey,manKey,sysVolKey].filter(Boolean);
+  var manVolKey=null;
+  rowKeys.forEach(function(k){
+    if(usedKeys.indexOf(k)>=0) return;
+    var kl=k.toLowerCase();
+    if(kl.indexOf('manual')>=0&&(kl.indexOf('vol')>=0||kl.indexOf('amount')>=0||kl.indexOf('value')>=0)) manVolKey=k;
+  });
+  /* second pass: any unused numeric-ish key containing 'vol','amount','value' */
+  if(!manVolKey){
+    rowKeys.forEach(function(k){
+      if(manVolKey) return;
+      if(usedKeys.indexOf(k)>=0) return;
+      var kl=k.toLowerCase();
+      if(kl.indexOf('vol')>=0||kl.indexOf('amount')>=0||kl.indexOf('man')>=0) manVolKey=k;
+    });
+  }
+
+  if(!sysKey&&!manKey){
+    $('loading').style.display='none';
+    $('empty').style.display='flex';
+    return;
+  }
+
+  /* build sorted points */
+  var pts=[];
+  rows.forEach(function(row){
+    var lbl=hourKey?fmtLabel(row[hourKey]):'';
+    /* parse hour order for sorting */
+    var order=0;
+    if(hourKey&&row[hourKey]){
+      var nv=row[hourKey].nativeValue;
+      if(typeof nv==='number'){
+        order=nv>1e10?new Date(nv).getHours():nv;
+      }
+    }
+    pts.push({
+      lbl:lbl,order:order,
+      sysCnt:dvNum(row,sysKey),
+      manCnt:dvNum(row,manKey),
+      sysVol:dvNum(row,sysVolKey),
+      manVol:dvNum(row,manVolKey)
+    });
+  });
+  pts.sort(function(a,b){return a.order-b.order;});
+
+  /* dedup by label */
+  var seen={},unique=[];
+  pts.forEach(function(p){if(!seen[p.lbl]){seen[p.lbl]=true;unique.push(p);}});
+  pts=unique;
+
+  var labels  =pts.map(function(p){return p.lbl;});
+  var sysCnt  =pts.map(function(p){return p.sysCnt;});
+  var manCnt  =pts.map(function(p){return p.manCnt;});
+  var sysVol  =pts.map(function(p){return p.sysVol;});
+  var manVol  =pts.map(function(p){return p.manVol;});
+
+  /* footer totals */
+  var totSysCnt=sysCnt.reduce(function(s,v){return s+(v||0);},0);
+  var totManCnt=manCnt.reduce(function(s,v){return s+(v||0);},0);
+  var totSysVol=sysVol.reduce(function(s,v){return s+(v||0);},0);
+  var totManVol=manVol.reduce(function(s,v){return s+(v||0);},0);
+
+  $('f-sys-cnt').textContent=fmtCnt(totSysCnt);
+  $('f-man-cnt').textContent=fmtCnt(totManCnt);
+  $('f-sys-vol').textContent=fmtV(totSysVol);
+  $('f-man-vol').textContent=fmtV(totManVol);
+
+  /* subtitle: show date range if available */
+  if(labels.length){
+    $('hdr-sub').textContent=labels[0]+(labels.length>1?' – '+labels[labels.length-1]:'')+' · Manual vs System';
+  }
+
+  $('loading').style.display='none';
+  $('empty').style.display='none';
+  buildChart(labels,sysCnt,manCnt,sysVol,manVol);
+}
+
+/* ── confirmed working init ── */
+window.onload=tableau.extensions.initializeAsync().then(function(){
+  var ws=tableau.extensions.worksheetContent.worksheet;
+
+  var update=async function(){
+    $('loading').style.display='flex';
+    var data=await getData(ws);
+    var enc =await getEnc(ws);
+    process(data,enc);
+  };
+
+  ws.addEventListener(tableau.TableauEventType.SummaryDataChanged,update);
+  update();
+});
+
+})();
+</script>
+</body>
+</html>

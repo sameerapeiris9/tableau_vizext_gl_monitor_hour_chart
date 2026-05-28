@@ -11,52 +11,42 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root{
-  --bg:       #f1f5f9;
-  --card:     #ffffff;
-  --bdr:      #eff2f6;
-  --t1:       #1e293b;
-  --t2:       #334155;
-  --t3:       #64748b;
-  --t4:       #94a3b8;
-  --sys-bar:  #2563eb;
-  --man-bar:  #7c3aed;
-  --sys-line: #0ea5e9;
-  --man-line: #6366f1;
-  --font:     'Inter',-apple-system,'Segoe UI',sans-serif;
-  --ease:     cubic-bezier(.16,1,.3,1);
+  --bg:     #f1f5f9;
+  --card:   #ffffff;
+  --bdr:    #eff2f6;
+  --t1:     #1e293b;
+  --t2:     #334155;
+  --t3:     #64748b;
+  --t4:     #94a3b8;
+  --t5:     #cbd5e1;
+  --sys-bar:#2563eb;
+  --man-bar:#7c3aed;
+  --sys-ln: #0ea5e9;
+  --man-ln: #6366f1;
+  --font:   'Inter',-apple-system,'Segoe UI',sans-serif;
+  --ease:   cubic-bezier(.16,1,.3,1);
 }
 
 html,body{
   width:100%;height:100%;
   background:var(--bg);
   font-family:var(--font);
-  display:flex;align-items:stretch;justify-content:stretch;
+  display:flex;align-items:stretch;
   overflow:hidden;
   -webkit-font-smoothing:antialiased;
 }
+#app{width:100%;height:100%;display:flex;align-items:stretch;}
 
-#app{
-  width:100%;height:100%;
-  display:flex;align-items:stretch;
-}
-
-/* ════════════════════════════════
-   CHART CARD — fills entire zone
-════════════════════════════════ */
+/* ════════════════ CARD ════════════════ */
 .chart-card{
-  width:100%;
-  background:var(--card);
-  border-radius:0;
-  box-shadow:none;
-  overflow:hidden;
-  display:flex;
-  flex-direction:column;
-  transition:box-shadow .2s ease;
+  width:100%;background:var(--card);
+  border-radius:0;overflow:hidden;
+  display:flex;flex-direction:column;
 }
 
-/* ── HEADER ── */
+/* ════════════════ HEADER ════════════════ */
 .chart-header{
-  padding:14px 20px 12px;
+  padding:11px 16px 10px;
   border-bottom:1px solid var(--bdr);
   flex-shrink:0;
 }
@@ -65,101 +55,155 @@ html,body{
   justify-content:space-between;
   gap:10px;flex-wrap:wrap;
 }
-.hdr-title{
-  font-size:13px;font-weight:700;
-  color:var(--t1);letter-spacing:-.3px;
-  line-height:1.2;
-}
-.hdr-sub{
-  font-size:10px;color:var(--t4);
-  font-weight:400;margin-top:2px;
-}
+.hdr-title{font-size:12.5px;font-weight:700;color:var(--t1);letter-spacing:-.3px;}
+.hdr-sub{font-size:9.5px;color:var(--t4);font-weight:400;margin-top:1px;}
 
-/* live badge removed */
+/* ── toggle button group ── */
+.toggle-group{
+  display:flex;gap:4px;flex-wrap:wrap;align-items:center;
+}
+.tog{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:9.5px;font-weight:600;
+  padding:3px 9px;border-radius:6px;
+  border:1px solid var(--bdr);
+  background:#fff;color:var(--t3);
+  cursor:pointer;transition:all .15s;
+  user-select:none;font-family:var(--font);
+  white-space:nowrap;
+}
+.tog:hover{border-color:var(--t4);color:var(--t2);}
+.tog.on{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;}
+.tog svg{width:11px;height:11px;flex-shrink:0;}
 
-/* legend */
+/* ── legend row ── */
 .legend{
-  display:flex;gap:14px;margin-top:10px;
+  display:flex;gap:12px;margin-top:9px;
   flex-wrap:wrap;align-items:center;
 }
 .li{
   display:flex;align-items:center;gap:5px;
-  font-size:10.5px;font-weight:500;color:#475569;
+  font-size:10px;font-weight:500;color:#475569;
 }
 .ld{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
-.ll{width:18px;height:3px;border-radius:3px;flex-shrink:0;}
-/* axis helper tags */
+.ll{width:17px;height:3px;border-radius:3px;flex-shrink:0;}
 .axis-tag{
-  font-size:8.5px;font-weight:600;
-  padding:1px 6px;border-radius:4px;
+  font-size:8px;font-weight:600;
+  padding:1px 5px;border-radius:4px;
   letter-spacing:.03em;white-space:nowrap;
 }
 .bar-tag{background:#eff6ff;color:#1d4ed8;}
 .line-tag{background:#f0f9ff;color:#0369a1;}
+/* legend hidden state */
+.legend.hidden{display:none;}
 
-/* ── CHART AREA ── */
+/* ════════════════ CHART ════════════════ */
 .chart-container{
-  flex:1;
-  padding:12px 16px 10px;
-  position:relative;
-  min-height:0;
+  flex:1;padding:10px 14px 8px;
+  position:relative;min-height:0;
 }
-#chart-canvas{
-  width:100%!important;
-  height:100%!important;
+#chart-canvas{width:100%!important;height:100%!important;}
+
+/* ════════════════ HOVER PANEL ════════════════ */
+#hover-panel{
+  position:absolute;
+  top:10px;right:14px;
+  width:220px;
+  background:rgba(15,23,42,.93);
+  backdrop-filter:blur(12px);
+  border-radius:12px;
+  padding:0;
+  z-index:20;
+  pointer-events:none;
+  opacity:0;
+  transform:translateX(8px);
+  transition:opacity .2s var(--ease),transform .2s var(--ease);
+  overflow:hidden;
+  box-shadow:0 8px 24px rgba(0,0,0,.25);
+}
+#hover-panel.visible{
+  opacity:1;transform:translateX(0);
 }
 
-/* ── FOOTER ── */
+.hp-header{
+  padding:9px 12px 7px;
+  border-bottom:1px solid rgba(255,255,255,.1);
+}
+.hp-hour{
+  font-size:10px;font-weight:700;color:#f1f5f9;
+  letter-spacing:.03em;
+}
+/* summary row */
+.hp-summary{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:0;
+  padding:8px 12px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.hp-stat{display:flex;flex-direction:column;gap:1px;}
+.hp-stat-lbl{font-size:7.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.45);}
+.hp-stat-val{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;}
+.hp-stat-sub{font-size:8px;color:rgba(255,255,255,.45);margin-top:1px;}
+
+/* top-5 list */
+.hp-list-hdr{
+  font-size:7.5px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;
+  color:rgba(255,255,255,.4);
+  padding:7px 12px 4px;
+}
+.hp-row{
+  display:grid;
+  grid-template-columns:1fr 80px 60px;
+  gap:4px;align-items:center;
+  padding:4px 12px;
+  border-top:1px solid rgba(255,255,255,.04);
+  font-size:9px;
+}
+.hp-row:first-child{border-top:none;}
+.hp-cc{color:#cbd5e1;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hp-acc{color:rgba(255,255,255,.4);font-size:8px;font-variant-numeric:tabular-nums;}
+.hp-amt{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;color:#f1f5f9;}
+.hp-empty{
+  padding:10px 12px;
+  font-size:9px;color:rgba(255,255,255,.35);
+  text-align:center;font-style:italic;
+}
+.hp-footer{
+  padding:6px 12px 8px;
+  font-size:8px;color:rgba(255,255,255,.3);
+  border-top:1px solid rgba(255,255,255,.06);
+  text-align:right;
+}
+
+/* ════════════════ FOOTER ════════════════ */
 .chart-footer{
-  padding:10px 20px 12px;
+  padding:8px 16px 10px;
   border-top:1px solid var(--bdr);
   display:flex;justify-content:space-between;
-  align-items:center;flex-wrap:wrap;gap:8px;
+  align-items:center;flex-wrap:wrap;gap:6px;
   flex-shrink:0;
 }
-/* freshness removed */
-.stats-summary{
-  display:flex;gap:16px;flex-wrap:wrap;
-}
-.stat-mini{
-  font-size:10px;color:var(--t3);
-  white-space:nowrap;
-}
+.stats-summary{display:flex;gap:14px;flex-wrap:wrap;}
+.stat-mini{font-size:9.5px;color:var(--t3);white-space:nowrap;}
 .stat-mini b{color:var(--t1);font-weight:600;}
 
-/* ── LOADING / EMPTY ── */
+/* ════════════════ LOADING / EMPTY ════════════════ */
 #loading{
   position:absolute;inset:0;
   display:flex;align-items:center;justify-content:center;
   background:rgba(255,255,255,.8);backdrop-filter:blur(4px);
   flex-direction:column;gap:10px;z-index:10;
-  border-radius:0;
 }
-.spinner{
-  width:28px;height:28px;
-  border:3px solid var(--bdr);
-  border-top-color:#3b82f6;
-  border-radius:50%;
-  animation:spin .8s linear infinite;
-}
+.spinner{width:26px;height:26px;border:3px solid var(--bdr);border-top-color:#2563eb;border-radius:50%;animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-txt{font-size:11px;color:var(--t4);font-weight:500;}
+#empty{display:none;position:absolute;inset:0;align-items:center;justify-content:center;flex-direction:column;gap:8px;}
+.empty-icon{font-size:26px;}.empty-txt{font-size:11px;color:var(--t4);font-weight:500;text-align:center;padding:0 20px;}
 
-#empty{
-  display:none;
-  position:absolute;inset:0;
-  align-items:center;justify-content:center;
-  flex-direction:column;gap:8px;
-}
-.empty-icon{font-size:28px;}
-.empty-txt{font-size:11px;color:var(--t4);font-weight:500;}
-
-/* Responsive */
 @media(max-width:600px){
-  .chart-header{padding:10px 12px 8px;}
+  .chart-header{padding:9px 12px 8px;}
   .chart-container{padding:8px 8px 6px;}
-  .chart-footer{padding:8px 12px 10px;}
-  .hdr-title{font-size:11px;}
 }
 </style>
 </head>
@@ -167,52 +211,71 @@ html,body{
 <div id="app">
 <div class="chart-card">
 
-  <!-- Header -->
+  <!-- HEADER -->
   <div class="chart-header">
     <div class="hdr-top">
       <div>
-        <div class="hdr-title">GL Transaction Monitor — Hourly View</div>
+        <div class="hdr-title">GL Transaction Monitor</div>
         <div class="hdr-sub" id="hdr-sub">Manual vs System breakdown by hour</div>
       </div>
+      <!-- Toggle controls -->
+      <div class="toggle-group">
+        <button class="tog on" id="tog-legend" onclick="toggleLegend()" title="Show/hide legend">
+          <svg viewBox="0 0 12 12" fill="none"><rect x="1" y="2.5" width="4" height="2" rx=".8" fill="currentColor"/><rect x="1" y="7.5" width="4" height="2" rx=".8" fill="currentColor"/><line x1="6.5" y1="3.5" x2="11" y2="3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><line x1="6.5" y1="8.5" x2="11" y2="8.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Legend
+        </button>
+        <button class="tog on" id="tog-axis" onclick="toggleAxis()" title="Show/hide axis labels">
+          <svg viewBox="0 0 12 12" fill="none"><line x1="2" y1="10" x2="2" y2="2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="2" y1="10" x2="10" y2="10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="4" y1="7" x2="4" y2="10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/><line x1="7" y1="5" x2="7" y2="10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
+          Axis
+        </button>
+      </div>
     </div>
-    <div class="legend">
+
+    <!-- Legend -->
+    <div class="legend" id="legend-row">
       <div class="li">
-        <div class="ld" style="background:#2563eb"></div>
-        System Count
-        <span class="axis-tag bar-tag">BAR ← left axis</span>
+        <div class="ld" style="background:#2563eb"></div>System Count
+        <span class="axis-tag bar-tag">BAR ← left</span>
       </div>
       <div class="li">
-        <div class="ld" style="background:#7c3aed"></div>
-        Manual Count
-        <span class="axis-tag bar-tag">BAR ← left axis</span>
+        <div class="ld" style="background:#7c3aed"></div>Manual Count
+        <span class="axis-tag bar-tag">BAR ← left</span>
       </div>
       <div class="li">
-        <div class="ll" style="background:#0ea5e9"></div>
-        System Volume
-        <span class="axis-tag line-tag">LINE → right axis</span>
+        <div class="ll" style="background:#0ea5e9"></div>System Volume
+        <span class="axis-tag line-tag">LINE → right</span>
       </div>
       <div class="li">
-        <div class="ll" style="background:#6366f1"></div>
-        Manual Volume
-        <span class="axis-tag line-tag">LINE → right axis</span>
+        <div class="ll" style="background:#6366f1"></div>Manual Volume
+        <span class="axis-tag line-tag">LINE → right</span>
       </div>
     </div>
   </div>
 
-  <!-- Chart -->
+  <!-- CHART -->
   <div class="chart-container" style="position:relative">
     <canvas id="chart-canvas"></canvas>
+
+    <!-- Hover Panel -->
+    <div id="hover-panel">
+      <div class="hp-header"><div class="hp-hour" id="hp-hour">—</div></div>
+      <div class="hp-summary" id="hp-summary"></div>
+      <div class="hp-list-hdr" id="hp-list-hdr" style="display:none">Top transactions</div>
+      <div id="hp-list"></div>
+      <div class="hp-footer" id="hp-footer"></div>
+    </div>
+
     <div id="loading">
       <div class="spinner"></div>
       <div class="loading-txt">Loading data…</div>
     </div>
     <div id="empty" style="display:none">
       <div class="empty-icon">📊</div>
-      <div class="empty-txt">Drop Hour, System Count, Manual Count and System Volume on the Marks card</div>
+      <div class="empty-txt">Drop Hour, System Count, Manual Count and System Volume on the Marks card. Add Cost Centre, Account No and Amount on Detail for transaction drill-down.</div>
     </div>
   </div>
 
-  <!-- Footer -->
+  <!-- FOOTER -->
   <div class="chart-footer">
     <div class="stats-summary">
       <div class="stat-mini">System: <b id="f-sys-cnt">—</b> txns · <b id="f-sys-vol">—</b></div>
@@ -229,22 +292,109 @@ html,body{
 
 var $=function(id){return document.getElementById(id);};
 var chartObj=null;
+var showLegend=true, showAxis=true;
 
-/* ── number format ── */
-function fmtV(n){
-  if(n===null||isNaN(n)) return '—';
+/* ── state for hover panel ── */
+var hoverData={};   /* keyed by label: {sysCnt,manCnt,sysVol,manVol,top5:[]} */
+var panelTimer=null;
+
+/* ════════════════════════════════
+   NUMBER FORMAT — no currency symbol
+════════════════════════════════ */
+function fmtN(n){
+  if(n===null||n===undefined||isNaN(n)) return '—';
   var abs=Math.abs(n),s=n<0?'-':'';
-  if(abs>=1e9) return s+(abs/1e9).toFixed(2)+'B';
-  if(abs>=1e6) return s+(abs/1e6).toFixed(1)+'M';
-  if(abs>=1e3) return s+(abs/1e3).toFixed(0)+'K';
-  return s+abs.toFixed(0);
+  if(abs>=1e9) return s+(abs/1e9).toFixed(2)+' B';
+  if(abs>=1e6) return s+(abs/1e6).toFixed(2)+' M';
+  if(abs>=1e3) return s+(abs/1e3).toFixed(1)+' K';
+  return s+Math.round(abs).toLocaleString('en-US');
 }
 function fmtCnt(n){
   if(n===null||isNaN(n)) return '—';
   return Math.round(n).toLocaleString('en-US');
 }
 
-/* ── confirmed working data reader ── */
+/* ════════════════════════════════
+   TOGGLE CONTROLS
+════════════════════════════════ */
+window.toggleLegend=function(){
+  showLegend=!showLegend;
+  var btn=$('tog-legend');
+  btn.classList.toggle('on',showLegend);
+  $('legend-row').classList.toggle('hidden',!showLegend);
+};
+window.toggleAxis=function(){
+  showAxis=!showAxis;
+  var btn=$('tog-axis');
+  btn.classList.toggle('on',showAxis);
+  if(chartObj){
+    chartObj.options.scales.x.ticks.display=showAxis;
+    chartObj.options.scales['y-count'].ticks.display=showAxis;
+    chartObj.options.scales['y-count'].title.display=showAxis;
+    chartObj.options.scales['y-amount'].ticks.display=showAxis;
+    chartObj.options.scales['y-amount'].title.display=showAxis;
+    chartObj.update('none');
+  }
+};
+
+/* ════════════════════════════════
+   HOVER PANEL
+════════════════════════════════ */
+function showPanel(label){
+  var d=hoverData[label];
+  if(!d) return;
+
+  $('hp-hour').textContent='Hour: '+label;
+
+  /* summary */
+  var sum=$('hp-summary');
+  sum.innerHTML=
+    '<div class="hp-stat">'+
+      '<div class="hp-stat-lbl" style="color:rgba(37,99,235,.8)">System</div>'+
+      '<div class="hp-stat-val" style="color:#93c5fd">'+fmtCnt(d.sysCnt)+'</div>'+
+      '<div class="hp-stat-sub">txns  ·  '+fmtN(d.sysVol)+'</div>'+
+    '</div>'+
+    '<div class="hp-stat">'+
+      '<div class="hp-stat-lbl" style="color:rgba(124,58,237,.8)">Manual</div>'+
+      '<div class="hp-stat-val" style="color:#c4b5fd">'+fmtCnt(d.manCnt)+'</div>'+
+      '<div class="hp-stat-sub">txns  ·  '+fmtN(d.manVol)+'</div>'+
+    '</div>';
+
+  /* top 5 list */
+  var listEl=$('hp-list');
+  listEl.innerHTML='';
+  var top5=d.top5||[];
+
+  if(top5.length){
+    $('hp-list-hdr').style.display='';
+    top5.forEach(function(t,i){
+      var row=document.createElement('div');
+      row.className='hp-row';
+      var rankColor=i===0?'#fbbf24':i===1?'#94a3b8':i===2?'#d97706':'rgba(255,255,255,.5)';
+      row.innerHTML=
+        '<span class="hp-cc" style="color:#e2e8f0">'+escH(t.cc||'—')+'</span>'+
+        '<span class="hp-acc">'+escH(t.acc||'—')+'</span>'+
+        '<span class="hp-amt" style="color:'+rankColor+'">'+fmtN(t.amt)+'</span>';
+      listEl.appendChild(row);
+    });
+    var totalTxns=(d.sysCnt||0)+(d.manCnt||0);
+    $('hp-footer').textContent='Showing top 5 of '+fmtCnt(totalTxns)+' transactions';
+  } else {
+    $('hp-list-hdr').style.display='none';
+    listEl.innerHTML='<div class="hp-empty">Drop Cost Centre, Account No &amp; Amount on Detail for drill-down</div>';
+    $('hp-footer').textContent='';
+  }
+
+  $('hover-panel').classList.add('visible');
+}
+
+function hidePanel(){
+  $('hover-panel').classList.remove('visible');
+}
+
+/* ════════════════════════════════
+   CONFIRMED WORKING DATA READERS
+════════════════════════════════ */
 async function getData(ws){
   var rows=[],rdr=await ws.getSummaryDataReaderAsync(undefined,{ignoreSelection:true});
   for(var i=0;i<rdr.pageCount;i++){
@@ -258,7 +408,6 @@ async function getData(ws){
   await rdr.releaseAsync();
   return rows;
 }
-
 async function getEnc(ws){
   var spec=await ws.getVisualSpecificationAsync(),map={};
   if(spec.activeMarksSpecificationIndex<0) return map;
@@ -267,144 +416,139 @@ async function getEnc(ws){
   return map;
 }
 
-/* ── find row key ── */
+/* ── field lookup helpers ── */
 function findKey(encField,rowKeys){
   if(!encField) return null;
   var nm=encField.name.toLowerCase();
   for(var i=0;i<rowKeys.length;i++) if(rowKeys[i].toLowerCase()===nm) return rowKeys[i];
   return null;
 }
-
-/* ── auto-detect hour/date key ── */
 function autoHourKey(rowKeys,rows){
-  var candidates=['hour','h','time','date','day','month','period','posting'];
-  for(var ci=0;ci<candidates.length;ci++){
+  var cands=['hour','h','time','date','day','month','period','posting'];
+  for(var ci=0;ci<cands.length;ci++)
+    for(var ki=0;ki<rowKeys.length;ki++)
+      if(rowKeys[ki].toLowerCase().indexOf(cands[ci])>=0) return rowKeys[ki];
+  if(rows.length)
     for(var ki=0;ki<rowKeys.length;ki++){
-      if(rowKeys[ki].toLowerCase().indexOf(candidates[ci])>=0) return rowKeys[ki];
-    }
-  }
-  /* fallback: find a key where formattedValue looks like HH:MM or just a number */
-  if(rows.length){
-    for(var ki=0;ki<rowKeys.length;ki++){
-      var dv=rows[0][rowKeys[ki]];
-      if(!dv) continue;
+      var dv=rows[0][rowKeys[ki]];if(!dv) continue;
       var fv=(dv.formattedValue||'');
-      if(fv.match(/^\d{1,2}:\d{2}$/)||fv.match(/^hour\s*\d/i)) return rowKeys[ki];
+      if(fv.match(/^\d{1,2}:\d{2}$/)) return rowKeys[ki];
     }
-  }
+  return null;
+}
+function findKeyByPattern(rowKeys,usedKeys,patterns){
+  for(var pi=0;pi<patterns.length;pi++)
+    for(var ki=0;ki<rowKeys.length;ki++){
+      if(usedKeys.indexOf(rowKeys[ki])>=0) continue;
+      if(rowKeys[ki].toLowerCase().indexOf(patterns[pi])>=0) return rowKeys[ki];
+    }
   return null;
 }
 
-/* ── format label from DataValue ── */
 function fmtLabel(dv){
   if(!dv) return '';
   var fv=(dv.formattedValue||'').trim();
   if(fv&&fv!=='%null%'&&fv!=='Null') return fv;
   var nv=dv.nativeValue;
   if(typeof nv==='number'&&nv>=0&&nv<=23) return nv+':00';
-  if(typeof nv==='number'&&nv>1e10){
-    var d=new Date(nv);
-    return d.getHours()+':00';
-  }
+  if(typeof nv==='number'&&nv>1e10){var d=new Date(nv);return d.getHours()+':00';}
   return String(nv||'');
 }
-
-/* ── dvNum ── */
 function dvNum(row,k){
   if(!k||!row[k]) return null;
   var dv=row[k];
   var raw=dv.nativeValue!==undefined&&dv.nativeValue!==null?dv.nativeValue:dv.value;
-  var n=parseFloat(raw);
-  return isNaN(n)?null:n;
+  var n=parseFloat(raw);return isNaN(n)?null:n;
+}
+function dvStr(row,k){
+  if(!k||!row[k]) return '';
+  var f=row[k].formattedValue;
+  return(f&&f!=='%null%'&&f!=='Null')?f.trim():'';
+}
+function escH(s){
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-/* ── build / update chart ── */
+/* ════════════════════════════════
+   BUILD / UPDATE CHART
+════════════════════════════════ */
 function buildChart(labels,sysCnt,manCnt,sysVol,manVol){
   var ctx=$('chart-canvas').getContext('2d');
 
-  /* ── Suppress all-zero series: replace with null so Chart.js hides them ──
-     When every value in a series is 0 or null, the dataset is not meaningful.
-     Nulls are skipped by Chart.js (no bar drawn, line has gaps) which is cleaner
-     than showing a flat zero line that confuses the scale.                       */
-  function allZero(arr){
-    return arr.every(function(v){return v===null||v===0;});
-  }
-  if(allZero(sysCnt))  sysCnt =sysCnt.map(function(){return null;});
-  if(allZero(manCnt))  manCnt =manCnt.map(function(){return null;});
-  if(allZero(sysVol))  sysVol =sysVol.map(function(){return null;});
-  if(allZero(manVol))  manVol =manVol.map(function(){return null;});
+  function allZero(arr){return arr.every(function(v){return v===null||v===0;});}
+  if(allZero(sysCnt)) sysCnt=sysCnt.map(function(){return null;});
+  if(allZero(manCnt)) manCnt=manCnt.map(function(){return null;});
+  if(allZero(sysVol)) sysVol=sysVol.map(function(){return null;});
+  if(allZero(manVol)) manVol=manVol.map(function(){return null;});
 
-  /* recalculate maxCnt from non-null values only */
   var maxCnt=Math.max.apply(null,sysCnt.concat(manCnt).filter(function(v){return v!==null;}));
+  if(!isFinite(maxCnt)||maxCnt<=0) maxCnt=100;
   var cntStep=Math.ceil(maxCnt/5/100)*100||100;
 
+  var showYCount=!(allZero(sysCnt)&&allZero(manCnt));
+  var showYAmt  =!(allZero(sysVol)&&allZero(manVol));
+
   var opts={
-    responsive:true,
-    maintainAspectRatio:false,
+    responsive:true,maintainAspectRatio:false,
     interaction:{mode:'index',intersect:false},
     animation:{duration:800,easing:'easeOutQuart'},
+    onHover:function(event,elements,chart){
+      if(elements&&elements.length>0){
+        var idx=elements[0].index;
+        var lbl=labels[idx];
+        if(lbl) showPanel(lbl);
+      } else {
+        clearTimeout(panelTimer);
+        panelTimer=setTimeout(hidePanel,200);
+      }
+    },
     plugins:{
       legend:{display:false},
       tooltip:{
-        backgroundColor:'#1e293b',
-        titleColor:'#f1f5f9',bodyColor:'#cbd5e1',
-        titleFont:{size:11,weight:'600',family:'Inter'},
-        bodyFont:{size:10,family:'Inter'},
-        padding:12,cornerRadius:10,caretSize:6,
-        callbacks:{
-          title:function(ctx2){return 'Hour: '+ctx2[0].label;},
-          label:function(ctx2){
-            var l=ctx2.dataset.label,v=ctx2.raw;
-            if(v===null||v===undefined) return null;
-            if(l==='System Count')  return '  System: '+fmtCnt(v)+' txns';
-            if(l==='Manual Count')  return '  Manual: '+fmtCnt(v)+' txn'+(v!==1?'s':'');
-            if(l==='System Volume') return '  Sys Vol: '+fmtV(v);
-            if(l==='Manual Volume') return '  Man Vol: '+fmtV(v);
-            return l+': '+v;
-          },
-          afterBody:function(ctx2){
-            var idx=ctx2[0].dataIndex;
-            var mc=manCnt[idx], mv=manVol[idx];
-            if(mc>0&&mv>0){
-              return '   └ Avg per manual: '+fmtV(Math.round(mv/mc));
-            }
-            return null;
-          }
-        }
+        /* Use built-in tooltip only as a fallback — our panel handles display */
+        enabled:false
       }
     },
     scales:{
       x:{
-        grid:{display:false},
-        border:{display:false},
+        grid:{display:false},border:{display:false},
         ticks:{
+          display:showAxis,
           font:{size:9,family:'Inter',weight:'500'},
           color:'#94a3b8',maxRotation:45,
-          callback:function(v,i){
-            /* show every 3rd label to avoid crowding */
-            return i%3===0?labels[i]:'';
-          }
+          callback:function(v,i){return i%3===0?labels[i]:'';}
         }
       },
       'y-count':{
         position:'left',
-        display:!(allZero(sysCnt)&&allZero(manCnt)),
-        title:{display:true,text:'Transaction Count',
-          font:{size:9,weight:'600',family:'Inter'},color:'#64748b',padding:{bottom:6}},
+        display:showYCount,
+        title:{
+          display:showAxis&&showYCount,
+          text:'Count',
+          font:{size:9,weight:'600',family:'Inter'},color:'#64748b',padding:{bottom:4}
+        },
         grid:{display:false,drawBorder:false,drawOnChartArea:false},
-        ticks:{font:{size:9,family:'Inter'},color:'#94a3b8',
-          callback:function(v){return v.toLocaleString();},stepSize:cntStep},
+        ticks:{
+          display:showAxis,
+          font:{size:9,family:'Inter'},color:'#94a3b8',
+          callback:function(v){return v.toLocaleString();},stepSize:cntStep
+        },
         border:{display:false},min:0
       },
       'y-amount':{
         position:'right',
-        /* hide right axis completely if both volume series are all-null */
-        display:!(allZero(sysVol)&&allZero(manVol)),
-        title:{display:true,text:'Volume',
-          font:{size:9,weight:'600',family:'Inter'},color:'#64748b',padding:{bottom:6}},
+        display:showYAmt,
+        title:{
+          display:showAxis&&showYAmt,
+          text:'Volume',
+          font:{size:9,weight:'600',family:'Inter'},color:'#64748b',padding:{bottom:4}
+        },
         grid:{display:false,drawBorder:false,drawOnChartArea:false},
-        ticks:{font:{size:9,family:'Inter'},color:'#94a3b8',
-          callback:function(v){return fmtV(v);}},
+        ticks:{
+          display:showAxis,
+          font:{size:9,family:'Inter'},color:'#94a3b8',
+          callback:function(v){return fmtN(v);}
+        },
         border:{display:false}
       }
     },
@@ -413,38 +557,26 @@ function buildChart(labels,sysCnt,manCnt,sysVol,manVol){
 
   var datasets=[
     {
-      label:'System Count',data:sysCnt,
-      type:'bar',yAxisID:'y-count',
-      backgroundColor:'rgba(37,99,235,.72)',
-      borderColor:'#1d4ed8',borderWidth:0,
+      label:'System Count',data:sysCnt,type:'bar',yAxisID:'y-count',
+      backgroundColor:'rgba(37,99,235,.72)',borderColor:'#1d4ed8',borderWidth:0,
       borderRadius:5,barPercentage:.65,categoryPercentage:.75,order:2
     },
     {
-      label:'Manual Count',data:manCnt,
-      type:'bar',yAxisID:'y-count',
-      backgroundColor:'rgba(124,58,237,.72)',
-      borderColor:'#6d28d9',borderWidth:0,
+      label:'Manual Count',data:manCnt,type:'bar',yAxisID:'y-count',
+      backgroundColor:'rgba(124,58,237,.72)',borderColor:'#6d28d9',borderWidth:0,
       borderRadius:5,barPercentage:.65,categoryPercentage:.75,order:1
     },
     {
-      label:'System Volume',data:sysVol,
-      type:'line',yAxisID:'y-amount',
-      borderColor:'#0ea5e9',backgroundColor:'transparent',
-      borderWidth:2.5,
-      pointRadius:2.5,pointHoverRadius:6,
-      pointBackgroundColor:'#0ea5e9',
-      pointBorderColor:'#fff',pointBorderWidth:2,
-      tension:.3,fill:false,order:0
+      label:'System Volume',data:sysVol,type:'line',yAxisID:'y-amount',
+      borderColor:'#0ea5e9',backgroundColor:'transparent',borderWidth:2.5,
+      pointRadius:2.5,pointHoverRadius:6,pointBackgroundColor:'#0ea5e9',
+      pointBorderColor:'#fff',pointBorderWidth:2,tension:.3,fill:false,order:0
     },
     {
-      label:'Manual Volume',data:manVol,
-      type:'line',yAxisID:'y-amount',
-      borderColor:'#6366f1',backgroundColor:'transparent',
-      borderWidth:2.5,
-      pointRadius:3.5,pointHoverRadius:7,
-      pointBackgroundColor:'#6366f1',
-      pointBorderColor:'#fff',pointBorderWidth:2,
-      tension:.3,fill:false,order:0
+      label:'Manual Volume',data:manVol,type:'line',yAxisID:'y-amount',
+      borderColor:'#6366f1',backgroundColor:'transparent',borderWidth:2.5,
+      pointRadius:3.5,pointHoverRadius:7,pointBackgroundColor:'#6366f1',
+      pointBorderColor:'#fff',pointBorderWidth:2,tension:.3,fill:false,order:0
     }
   ];
 
@@ -454,114 +586,121 @@ function buildChart(labels,sysCnt,manCnt,sysVol,manVol){
     chartObj.data.labels=labels;
     datasets.forEach(function(ds,i){chartObj.data.datasets[i].data=ds.data;});
     chartObj.options.scales['y-count'].ticks.stepSize=cntStep;
+    chartObj.options.scales['y-count'].display=showYCount;
+    chartObj.options.scales['y-amount'].display=showYAmt;
     chartObj.update('active');
   }
 }
 
-/* ── process rows → chart data ── */
+/* ════════════════════════════════
+   PROCESS ROWS
+════════════════════════════════ */
 function process(rows,enc){
-  if(!rows.length){
-    $('loading').style.display='none';
-    $('empty').style.display='flex';
-    return;
-  }
+  if(!rows.length){$('loading').style.display='none';$('empty').style.display='flex';return;}
 
   var rowKeys=Object.keys(rows[0]);
-
   var hourKey   =findKey(enc.hour,    rowKeys)||autoHourKey(rowKeys,rows);
   var sysKey    =findKey(enc.sys_count,rowKeys);
   var manKey    =findKey(enc.man_count,rowKeys);
   var sysVolKey =findKey(enc.sys_vol,  rowKeys);
 
-  /* auto-detect manual volume from Detail fields */
+  /* auto-detect manual volume + transaction detail fields from Detail tile */
   var usedKeys=[hourKey,sysKey,manKey,sysVolKey].filter(Boolean);
-  var manVolKey=null;
-  rowKeys.forEach(function(k){
-    if(usedKeys.indexOf(k)>=0) return;
-    var kl=k.toLowerCase();
-    if(kl.indexOf('manual')>=0&&(kl.indexOf('vol')>=0||kl.indexOf('amount')>=0||kl.indexOf('value')>=0)) manVolKey=k;
-  });
-  /* second pass: any unused numeric-ish key containing 'vol','amount','value' */
-  if(!manVolKey){
-    rowKeys.forEach(function(k){
-      if(manVolKey) return;
-      if(usedKeys.indexOf(k)>=0) return;
-      var kl=k.toLowerCase();
-      if(kl.indexOf('vol')>=0||kl.indexOf('amount')>=0||kl.indexOf('man')>=0) manVolKey=k;
-    });
-  }
+  var manVolKey=findKeyByPattern(rowKeys,usedKeys,['manual_vol','man_vol','manual_amount','man_amount']);
+  if(!manVolKey) manVolKey=findKeyByPattern(rowKeys,usedKeys,['vol','amount','value','man']);
 
-  if(!sysKey&&!manKey){
-    $('loading').style.display='none';
-    $('empty').style.display='flex';
-    return;
-  }
+  /* top-5 transaction detail fields */
+  var ccKey  =findKeyByPattern(rowKeys,usedKeys,['cost_center','cost center','costcenter','cc','centre']);
+  var accKey =findKeyByPattern(rowKeys,usedKeys,['account_no','accountno','account no','account','acct']);
+  var amtKey =findKeyByPattern(rowKeys,usedKeys,['amount','amt','value','vol']);
+
+  if(!sysKey&&!manKey){$('loading').style.display='none';$('empty').style.display='flex';return;}
 
   /* build sorted points */
   var pts=[];
   rows.forEach(function(row){
     var lbl=hourKey?fmtLabel(row[hourKey]):'';
-    /* parse hour order for sorting */
     var order=0;
     if(hourKey&&row[hourKey]){
       var nv=row[hourKey].nativeValue;
-      if(typeof nv==='number'){
-        order=nv>1e10?new Date(nv).getHours():nv;
-      }
+      if(typeof nv==='number') order=nv>1e10?new Date(nv).getHours():nv;
     }
     pts.push({
       lbl:lbl,order:order,
       sysCnt:dvNum(row,sysKey),
       manCnt:dvNum(row,manKey),
       sysVol:dvNum(row,sysVolKey),
-      manVol:dvNum(row,manVolKey)
+      manVol:dvNum(row,manVolKey),
+      cc:    dvStr(row,ccKey),
+      acc:   dvStr(row,accKey),
+      amt:   dvNum(row,amtKey)
     });
   });
   pts.sort(function(a,b){return a.order-b.order;});
 
-  /* dedup by label */
+  /* build hoverData keyed by label — group rows by label, top-5 by amount */
+  hoverData={};
+  pts.forEach(function(p){
+    if(!hoverData[p.lbl]) hoverData[p.lbl]={sysCnt:0,manCnt:0,sysVol:0,manVol:0,txns:[]};
+    var h=hoverData[p.lbl];
+    h.sysCnt+=(p.sysCnt||0);
+    h.manCnt+=(p.manCnt||0);
+    h.sysVol+=(p.sysVol||0);
+    h.manVol+=(p.manVol||0);
+    if(p.amt!==null&&p.amt!==0) h.txns.push({cc:p.cc,acc:p.acc,amt:p.amt});
+  });
+  /* sort txns descending and keep top 5 */
+  Object.keys(hoverData).forEach(function(k){
+    hoverData[k].txns.sort(function(a,b){return Math.abs(b.amt)-Math.abs(a.amt);});
+    hoverData[k].top5=hoverData[k].txns.slice(0,5);
+  });
+
+  /* deduplicate chart series by label */
   var seen={},unique=[];
   pts.forEach(function(p){if(!seen[p.lbl]){seen[p.lbl]=true;unique.push(p);}});
   pts=unique;
 
-  var labels  =pts.map(function(p){return p.lbl;});
-  var sysCnt  =pts.map(function(p){return p.sysCnt;});
-  var manCnt  =pts.map(function(p){return p.manCnt;});
-  var sysVol  =pts.map(function(p){return p.sysVol;});
-  var manVol  =pts.map(function(p){return p.manVol;});
+  var labels=pts.map(function(p){return p.lbl;});
+
+  /* aggregate per unique label */
+  var sysCnt=[],manCnt=[],sysVol=[],manVol=[];
+  labels.forEach(function(l){
+    var h=hoverData[l]||{};
+    sysCnt.push(h.sysCnt||null);
+    manCnt.push(h.manCnt||null);
+    sysVol.push(h.sysVol||null);
+    manVol.push(h.manVol||null);
+  });
 
   /* footer totals */
-  var totSysCnt=sysCnt.reduce(function(s,v){return s+(v||0);},0);
-  var totManCnt=manCnt.reduce(function(s,v){return s+(v||0);},0);
-  var totSysVol=sysVol.reduce(function(s,v){return s+(v||0);},0);
-  var totManVol=manVol.reduce(function(s,v){return s+(v||0);},0);
+  var tsc=Object.values(hoverData).reduce(function(s,v){return s+v.sysCnt;},0);
+  var tmc=Object.values(hoverData).reduce(function(s,v){return s+v.manCnt;},0);
+  var tsv=Object.values(hoverData).reduce(function(s,v){return s+v.sysVol;},0);
+  var tmv=Object.values(hoverData).reduce(function(s,v){return s+v.manVol;},0);
+  $('f-sys-cnt').textContent=fmtCnt(tsc);
+  $('f-man-cnt').textContent=fmtCnt(tmc);
+  $('f-sys-vol').textContent=fmtN(tsv);
+  $('f-man-vol').textContent=fmtN(tmv);
 
-  $('f-sys-cnt').textContent=fmtCnt(totSysCnt);
-  $('f-man-cnt').textContent=fmtCnt(totManCnt);
-  $('f-sys-vol').textContent=fmtV(totSysVol);
-  $('f-man-vol').textContent=fmtV(totManVol);
-
-  /* subtitle: show date range if available */
-  if(labels.length){
+  if(labels.length)
     $('hdr-sub').textContent=labels[0]+(labels.length>1?' – '+labels[labels.length-1]:'')+' · Manual vs System';
-  }
 
   $('loading').style.display='none';
   $('empty').style.display='none';
   buildChart(labels,sysCnt,manCnt,sysVol,manVol);
 }
 
-/* ── confirmed working init ── */
+/* ════════════════════════════════
+   CONFIRMED WORKING INIT
+════════════════════════════════ */
 window.onload=tableau.extensions.initializeAsync().then(function(){
   var ws=tableau.extensions.worksheetContent.worksheet;
-
   var update=async function(){
     $('loading').style.display='flex';
     var data=await getData(ws);
     var enc =await getEnc(ws);
     process(data,enc);
   };
-
   ws.addEventListener(tableau.TableauEventType.SummaryDataChanged,update);
   update();
 });
